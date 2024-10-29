@@ -1,0 +1,11 @@
+rest
+*.env*
+!.env.example
+tmp
+*.tmp
+bin
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib

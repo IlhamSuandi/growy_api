@@ -1,0 +1,596 @@
+basePath: /api/v1
+definitions:
+  dto.CheckInRequest:
+    properties:
+      location:
+        example: Jakarta
+        minLength: 3
+        type: string
+    required:
+    - location
+    type: object
+  dto.CheckInResponse:
+    properties:
+      check_in:
+        example: "2022-01-01T00:00:00Z"
+        type: string
+      date:
+        example: "2022-01-01"
+        type: string
+      location:
+        example: Jakarta
+        type: string
+      status:
+        example: present
+        type: string
+      user_id:
+        example: 00000000-0000-0000-0000-000000000000
+        type: string
+    type: object
+  dto.CreateQrResponse:
+    properties:
+      code:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      qr_code:
+        items:
+          type: integer
+        type: array
+    type: object
+  dto.GetAttendancesRequest:
+    properties:
+      user_id:
+        example: 00000000-0000-0000-0000-000000000000
+        minLength: 10
+        type: string
+    required:
+    - user_id
+    type: object
+  dto.GetAttendancesResponse:
+    properties:
+      attendances:
+        items:
+          $ref: '#/definitions/model.Attendance'
+        type: array
+      user_id:
+        type: string
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        example: userone@gmail.com
+        type: string
+      password:
+        example: Userone123+
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.RegisterRequest:
+    properties:
+      email:
+        example: userone@gmail.com
+        type: string
+      password:
+        example: Userone123+
+        minLength: 3
+        type: string
+      username:
+        example: userone
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  dto.RegisteredUserResponse:
+    properties:
+      email:
+        example: userone@gmail.com
+        type: string
+      username:
+        example: userone
+        type: string
+    type: object
+  dto.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: string
+      token_type:
+        type: string
+    type: object
+  model.Attendance:
+    properties:
+      attendanceId:
+        type: string
+      checkIn:
+        type: string
+      checkOut:
+        type: string
+      createdAt:
+        type: string
+      date:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      status:
+        type: string
+      updatedAt:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/model.User'
+        type: array
+    type: object
+  model.QRCode:
+    properties:
+      code:
+        type: string
+      createdAt:
+        type: string
+      expiresAt:
+        type: string
+      id:
+        type: integer
+      isUsed:
+        type: boolean
+      qrcodeId:
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        type: string
+    type: object
+  model.Role:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      roleId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  model.Session:
+    properties:
+      createdAt:
+        type: string
+      expiresAt:
+        type: string
+      id:
+        type: integer
+      ipaddress:
+        type: string
+      isRevoked:
+        type: boolean
+      refreshToken:
+        type: string
+      sessionId:
+        type: string
+      updatedAt:
+        type: string
+      userAgent:
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/model.User'
+        type: array
+    type: object
+  model.User:
+    properties:
+      attendances:
+        items:
+          $ref: '#/definitions/model.Attendance'
+        type: array
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      qrcode:
+        $ref: '#/definitions/model.QRCode'
+      roles:
+        items:
+          $ref: '#/definitions/model.Role'
+        type: array
+      sessions:
+        items:
+          $ref: '#/definitions/model.Session'
+        type: array
+      updatedAt:
+        type: string
+      userId:
+        type: string
+      username:
+        type: string
+    type: object
+  types.ErrorResponse:
+    properties:
+      error: {}
+      message:
+        example: Unauthorized
+        type: string
+      status:
+        example: 401
+        type: integer
+    type: object
+  types.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+host: localhost:5000
+info:
+  contact:
+    email: ilham15suandi@gmail.com
+    name: Ilham Suandi
+    url: https://github.com/ilhamSuandi
+  description: Growy API
+  title: Growy API
+  version: 1.0.0
+paths:
+  /attendances:
+    post:
+      consumes:
+      - application/json
+      description: get specific user attendances
+      parameters:
+      - description: token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GetAttendancesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully got attendances
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetAttendancesResponse'
+              type: object
+        "400":
+          description: request body is invalid
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "403":
+          description: token is empty
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get User Attendances
+      tags:
+      - Attendance
+  /attendances/check-in/{token}:
+    post:
+      consumes:
+      - application/json
+      description: daily checkin user, use qrcode to check in
+      parameters:
+      - description: token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CheckInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully Checked In Attendance
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CheckInResponse'
+              type: object
+        "400":
+          description: request body is invalid
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "403":
+          description: token is empty
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: check in user
+      tags:
+      - Attendance
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login as user
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully Logged In
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokenResponse'
+              type: object
+        "400":
+          description: request body is invalid
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: login as user
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register new user
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully registered user
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.RegisteredUserResponse'
+              type: object
+        "400":
+          description: request body is invalid
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "409":
+          description: user exists
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Register as user
+      tags:
+      - Auth
+  /auth/renew:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully Renewed Access Token
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokenResponse'
+              type: object
+        "303":
+          description: 'Redirect: User must log in again'
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: 'Unauthorized: Invalid or expired refresh token'
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Renew Access Token
+      tags:
+      - Auth
+  /qrcode/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: daily checkin user
+      parameters:
+      - description: userId
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: successfully created qrcode
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CreateQrResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: error getting qrcode
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: check in user
+      tags:
+      - QrCode
+    post:
+      consumes:
+      - application/json
+      description: manually re-generating user qrcode
+      parameters:
+      - description: userId
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: successfully created qrcode
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CreateQrResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: error creating qrcode
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: re-generate user qrcode
+      tags:
+      - QrCode
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: getting all users information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully get all users
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get All Users
+      tags:
+      - User
+  /users/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: getting specific user information
+      parameters:
+      - description: User ID
+        in: path
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully get all users
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get User by UserId
+      tags:
+      - User
+securityDefinitions:
+  BearerAuth:
+    description: 'Example Value: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

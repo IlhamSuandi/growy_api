@@ -1,0 +1,22 @@
+services:
+  database:
+    container_name: growy_db
+    image: postgres
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGPORT: ${DB_PORT}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{ DB_USER }}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: -p ${DB_PORT}
+
+volumes:
+  dbdata:
