@@ -29,11 +29,14 @@ tests-%:
 	@go test -v ./test/... -run=$(shell echo $* | sed 's/_/./g')
 
 migration:
-	@migrate create -ext sql -dir database/migrations $(filter-out $@,$(MAKECMDGOALS))
+	@read -p "Enter migration name: " name; \
+	cd database/migrations; goose create $$name sql
+
+migration-status:
+	@goose -dir database/migrations postgres "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" status
 
 migrate-up:
-	@go run ./cmd/migrate up
+	@goose -dir database/migrations postgres "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" up
 
 migrate-down:
-	@go run ./cmd/migrate down
-
+	@goose -dir database/migrations postgres "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" down
