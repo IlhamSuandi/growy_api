@@ -22,9 +22,18 @@ func TestAuthRegister(t *testing.T) {
 			Password: fixtures.UserOne.Password,
 		}
 
+		registerHandler := http.HandlerFunc(authController.Register)
+
 		t.Run("should return 200 and register user", func(t *testing.T) {
 			defer helper.ClearAll(test.DB)
-			_, response, err := helper.CreateRequest(http.MethodPost, registerPath, requestBody, authController.Register)
+			response, err := helper.CreateRequest(
+				http.MethodPost,
+        nil,
+				registerPath,
+				requestBody,
+				nil,
+				registerHandler,
+			)
 			assert.Nil(t, err)
 
 			var responseData dto.RegisteredUserResponse
@@ -58,7 +67,15 @@ func TestAuthRegister(t *testing.T) {
 		t.Run("should return 400 if email is invalid", func(t *testing.T) {
 			defer helper.ClearAll(test.DB)
 			requestBody.Email = "invalid"
-			_, response, err := helper.CreateRequest(http.MethodPost, registerPath, requestBody, authController.Register)
+
+			response, err := helper.CreateRequest(
+				http.MethodPost,
+        nil,
+				registerPath,
+				requestBody,
+				nil,
+				registerHandler,
+			)
 			assert.Nil(t, err)
 
 			assert.Equal(t, http.StatusBadRequest, response.Code)
@@ -68,7 +85,14 @@ func TestAuthRegister(t *testing.T) {
 			defer helper.ClearAll(test.DB)
 			requestBody.Email = "ilham@gmail.com"
 			requestBody.Password = "invalid"
-			_, response, err := helper.CreateRequest(http.MethodPost, registerPath, requestBody, authController.Register)
+			response, err := helper.CreateRequest(
+				http.MethodPost,
+        nil,
+				registerPath,
+				requestBody,
+				nil,
+				registerHandler,
+			)
 			assert.Nil(t, err)
 
 			assert.Equal(t, http.StatusBadRequest, response.Code)
@@ -86,7 +110,14 @@ func TestAuthRegister(t *testing.T) {
 			err := helper.CreateUser(&user)
 			assert.Nil(t, err)
 
-			_, response, err := helper.CreateRequest(http.MethodPost, registerPath, requestBody, authController.Register)
+			response, err := helper.CreateRequest(
+				http.MethodPost,
+        nil,
+				registerPath,
+				requestBody,
+				nil,
+				registerHandler,
+			)
 			assert.Nil(t, err)
 
 			responseBody, err := helper.ParseBody(response.Body, nil)

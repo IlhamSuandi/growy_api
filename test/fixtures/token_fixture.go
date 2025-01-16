@@ -23,7 +23,7 @@ func AccessToken(userId uuid.UUID, username string, email string) (string, error
 		Duration:  accessTokenExpiration,
 	}
 
-	accessToken, _, err := auth.CreateToken(session)
+	accessToken, _, err := auth.CreateSessionToken(session)
 	if err != nil {
 		return "", err
 	}

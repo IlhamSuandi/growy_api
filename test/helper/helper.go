@@ -3,6 +3,7 @@ package helper
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -18,13 +19,15 @@ import (
 )
 
 func CreateRequest(method string,
+	routePath *string,
 	path string,
 	requestBody interface{},
-	handler func(http.ResponseWriter, *http.Request),
-) (*http.Request, *httptest.ResponseRecorder, error) {
+	headers *map[string]string,
+	handler http.Handler,
+) (*httptest.ResponseRecorder, error) {
 	bodyJson, err := json.Marshal(requestBody)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil
 	}
 
 	request := httptest.NewRequest(http.MethodPost,
@@ -35,11 +38,24 @@ func CreateRequest(method string,
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json")
 
+	if headers != nil {
+		for key, value := range *headers {
+			request.Header.Set(key, value)
+		}
+	}
+
 	response := httptest.NewRecorder()
 
-	http.HandlerFunc(handler).ServeHTTP(response, request)
+	mux := http.NewServeMux()
+	if routePath != nil {
+		fmt.Println(*routePath)
+		mux.Handle(*routePath, handler)
+	} else {
+		mux.Handle(path, handler)
+	}
+	mux.ServeHTTP(response, request)
 
-	return request, response, err
+	return response, err
 }
 
 func ParseBody(responseBody io.Reader, targetType interface{}) (*types.Response, error) {

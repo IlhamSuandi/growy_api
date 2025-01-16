@@ -16,8 +16,9 @@ func TestMain(m *testing.M) {
 	utils.Log.Info("Starting Auth Tests")
 
 	attendanceRepo := repository.NewAttendanceRepository(test.DB)
+  companyRepo := repository.NewCompanyRepository(test.DB)
 	qrCodeRepo := repository.NewQrCodeRepository(test.DB)
-	attendanceUsecase := usecase.NewAttendanceUsecase(attendanceRepo, qrCodeRepo)
+	attendanceUsecase := usecase.NewAttendanceUsecase(attendanceRepo, qrCodeRepo, companyRepo)
 	attendanceController = controller.NewAttendanceController(attendanceUsecase)
 
 	m.Run()

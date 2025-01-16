@@ -32,9 +32,19 @@ func TestAuthLogin(t *testing.T) {
 		err := helper.CreateUser(&user)
 		assert.Nil(t, err)
 
+		loginHandler := http.HandlerFunc(authController.Login)
+
 		t.Run("should return 200 and login user", func(t *testing.T) {
 			assert.Nil(t, err)
-			_, response, err := helper.CreateRequest(http.MethodPost, loginPath, requestBody, authController.Login)
+			response, err := helper.CreateRequest(
+				http.MethodPost,
+				nil,
+				loginPath,
+				requestBody,
+				nil,
+				loginHandler,
+			)
+
 			assert.Nil(t, err)
 
 			responseBody, err := helper.ParseBody(response.Body, nil)
@@ -51,7 +61,14 @@ func TestAuthLogin(t *testing.T) {
 				Password: fixtures.UserTwo.Password,
 			}
 
-			_, response, err := helper.CreateRequest(http.MethodPost, loginPath, requestBody, authController.Login)
+			response, err := helper.CreateRequest(
+				http.MethodPost,
+        nil,
+				loginPath,
+				requestBody,
+				nil,
+				loginHandler,
+			)
 			assert.Nil(t, err)
 
 			responseBody, err := helper.ParseBody(response.Body, nil)
