@@ -36,11 +36,8 @@ func (s *APIServer) Start() error {
 	handler := middleware.Cors(router)
 
 	// enable global rate limiter
-	limit := rate.Every(time.Second / 3) // 3 requests per second
+	limit := rate.Every(time.Second / 5) // 3 requests per second
 	handler = middleware.Limiter(limit, nil, handler)
-
-	// enable global logger
-	handler = middleware.Log(s.db, handler)
 
 	// configure global server
 	server = http.Server{
