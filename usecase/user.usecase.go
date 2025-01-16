@@ -11,6 +11,7 @@ type UserUsecase interface {
 	GetUserByUserId(userId uuid.UUID) (*model.User, error)
 	GetUsers() ([]model.User, error)
 	CreateUser(user *model.User) error
+	UpdateUser(userId uint, user model.User) (*model.User, error)
 }
 
 type userUsecase struct {
@@ -33,9 +34,13 @@ func (uu *userUsecase) GetUserByUserId(userId uuid.UUID) (*model.User, error) {
 
 // find by email and return user or error
 func (uu *userUsecase) GetUserByEmail(email string) (model.User, error) {
-	return uu.GetUserByEmail(email)
+	return uu.userRepo.GetUserByEmail(email)
 }
 
 func (uu *userUsecase) GetUsers() ([]model.User, error) {
 	return uu.userRepo.GetUsers(nil, nil)
+}
+
+func (uu *userUsecase) UpdateUser(userId uint, user model.User) (*model.User, error) {
+	return uu.userRepo.UpdateUser(userId, user)
 }
