@@ -9,7 +9,7 @@ import (
 	"github.com/ilhamSuandi/business_assistant/types"
 )
 
-func CreateToken(session types.CreateToken) (string, *types.JwtClaims, error) {
+func CreateSessionToken(session types.CreateToken) (string, *types.JwtClaims, error) {
 	// create claims
 	claims := types.JwtClaims{
 		SessionId: session.SessionId,
@@ -21,6 +21,30 @@ func CreateToken(session types.CreateToken) (string, *types.JwtClaims, error) {
 			Subject:   session.Email,
 			IssuedAt:  time.Now().Unix(),
 			ExpiresAt: time.Now().Add(session.Duration).Unix(),
+		},
+	}
+
+	// create token
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+
+	// create token string
+	tokenString, err := token.SignedString([]byte(config.JWT_SECRET))
+	if err != nil {
+		return "", nil, err
+	}
+
+	return tokenString, &claims, nil
+}
+
+func CreateToken(email string, branchId uint) (string, *types.EmployeeClaims, error) {
+	claims := types.EmployeeClaims{
+		Email:    email,
+		BranchId: branchId,
+		StandardClaims: jwt.StandardClaims{
+			Id:        uuid.New().String(),
+			Subject:   email,
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), // 30 days
 		},
 	}
 
