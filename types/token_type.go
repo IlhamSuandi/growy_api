@@ -16,6 +16,12 @@ type JwtClaims struct {
 	jwt.StandardClaims
 }
 
+type EmployeeClaims struct {
+	Email     string
+  BranchId  uint
+	jwt.StandardClaims
+}
+
 type Tokens struct {
 	AccessToken            string
 	AccessTokenExpiration  time.Duration
