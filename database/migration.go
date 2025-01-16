@@ -9,10 +9,9 @@ import (
 func AutoMigrate(db *gorm.DB) {
 	log := utils.Log
 	log.Info("Auto Migrating Database...")
-
 	if err := db.AutoMigrate(
-		&model.Log{},
 		&model.User{},
+		&model.Log{},
 		&model.Session{},
 		&model.Permission{},
 		&model.Attendance{},
@@ -20,9 +19,12 @@ func AutoMigrate(db *gorm.DB) {
 		&model.Role{},
 		&model.Company{},
 		&model.Branch{},
-		&model.BranchOption{},
+		&model.CompanyOption{},
+		&model.Employee{},
+		&model.WorkSchedule{},
+		&model.Salary{},
 	); err != nil {
-		log.Println(err)
+		log.Error(err)
 	}
 
 	defer log.Info("successfully migrated")

@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE branches (
+CREATE TABLE IF NOT EXISTS branches (
   id serial PRIMARY KEY,
   uuid uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   created_at timestamp NOT NULL DEFAULT now(),
@@ -10,9 +10,6 @@ CREATE TABLE branches (
   name varchar(255) NOT NULL,
   address text NOT NULL
 );
-
-ALTER TABLE ONLY roles
-    ADD CONSTRAINT fk_branches_roles FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE;
 -- +goose StatementEnd
 
 -- +goose Down

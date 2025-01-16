@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE sessions (
+CREATE TABLE IF NOT EXISTS sessions (
   id serial PRIMARY KEY,
   uuid uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   created_at timestamp NOT NULL DEFAULT now(),

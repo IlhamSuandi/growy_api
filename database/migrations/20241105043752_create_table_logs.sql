@@ -1,11 +1,12 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE logs (
+CREATE TABLE IF NOT EXISTS logs (
   id serial PRIMARY KEY,
   uuid uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   created_at timestamp NOT NULL DEFAULT now(),
   updated_at timestamp NOT NULL DEFAULT now(),
 
+  email varchar(50) NOT NULL,
   remote_addr varchar(50),
   action varchar(10),
   method varchar(10),

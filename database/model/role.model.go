@@ -3,9 +3,10 @@ package model
 type Role struct {
 	Model
 
-	BranchId uint
-	UserId   *uint `gorm:"uniqueIndex"`
+	BranchId uint  `gorm:"index" json:"branch_id"`
+	UserId   *uint `gorm:"uniqueIndex" json:"user_id"`
 
-	Name        string        `gorm:"type:varchar(100);not null"`
-	Permissions []*Permission `gorm:"many2many:role_permissions;constraint:OnDelete:CASCADE"`
+	Name string `gorm:"type:varchar(100);not null" json:"name"`
+
+	// Permissions []*Permission `gorm:"foreignkey:RoleId;references:Id;constraint:OnDelete:SET NULL" json:"permissions"`
 }

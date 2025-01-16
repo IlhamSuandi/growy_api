@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE attendances (
+CREATE TABLE IF NOT EXISTS attendances (
   id serial PRIMARY KEY,
   uuid uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   created_at timestamp NOT NULL DEFAULT now(),

@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
   id serial PRIMARY KEY,
   uuid uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   created_at timestamp NOT NULL DEFAULT now(),
@@ -15,8 +15,8 @@ CREATE TABLE roles (
   ) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_roles_branch_id ON roles (branch_id);
-CREATE INDEX idx_roles_user_id ON roles (user_id);
+CREATE INDEX IF NOT EXISTS idx_roles_branch_id ON roles (branch_id);
+CREATE INDEX IF NOT EXISTS idx_roles_user_id ON roles (user_id);
 -- +goose StatementEnd
 
 -- +goose Down

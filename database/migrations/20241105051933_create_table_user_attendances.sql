@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE user_attendances (
+CREATE TABLE IF NOT EXISTS user_attendances (
   attendance_id bigint NOT NULL,
   user_id bigint NOT NULL,
 

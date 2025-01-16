@@ -1,13 +1,20 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"time"
 
-type BranchOption struct {
+	"github.com/google/uuid"
+)
+
+type CompanyOption struct {
 	Model
 
-	BranchId uint `gorm:"uniqueIndex"`
+	CompanyId    uint      `gorm:"uniqueIndex" json:"company_id"`
+	CheckInTime  time.Time `gorm:"type:time;not null" json:"check_in_time"`
+	WorkingHours uint      `gorm:"type:integer;not null" jjson:"working_hours"`
 
-	UseCheckout bool `gorm:"type:boolean;default:true"`
+	UseCheckout  bool      `gorm:"type:boolean;default:true" json:"use_checkout"`
+  CheckOutTime time.Time `gorm:"type:time" json:"check_out_time"`
 }
 
 type UserOption struct {

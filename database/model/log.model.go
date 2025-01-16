@@ -2,6 +2,7 @@ package model
 
 type Log struct {
 	Model
+	Email         string  `gorm:"type:varchar(50);not null"`
 	RemoteAddr    *string `gorm:"varchar(50)"`
 	Action        *string `gorm:"varchar(10)"`
 	Method        *string `gorm:"varchar(10)"`

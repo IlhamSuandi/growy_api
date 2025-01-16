@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE qr_codes (
+CREATE TABLE IF NOT EXISTS qr_codes (
   id serial PRIMARY KEY,
   uuid uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   created_at timestamp NOT NULL DEFAULT now(),
@@ -16,7 +16,7 @@ CREATE TABLE qr_codes (
   ) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_qr_codes_user_id ON qr_codes (user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_qr_codes_user_id ON qr_codes (user_id);
 -- +goose StatementEnd
 
 -- +goose Down

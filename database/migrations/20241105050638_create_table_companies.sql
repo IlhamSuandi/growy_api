@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE companies (
+CREATE TABLE IF NOT EXISTS companies (
   id serial PRIMARY KEY,
   uuid uuid UNIQUE NOT NULL DEFAULT gen_random_uuid(),
   created_at timestamp NOT NULL DEFAULT now(),
@@ -15,7 +15,7 @@ CREATE TABLE companies (
   ) REFERENCES users (email) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_companies_owner_email ON companies (owner_email);
+CREATE INDEX IF NOT EXISTS idx_companies_owner_email ON companies (owner_email);
 
 -- +goose StatementEnd
 
