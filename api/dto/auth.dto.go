@@ -28,5 +28,6 @@ type RegisteredUserResponse struct {
 type TokenResponse struct {
 	TokenType   string `json:"token_type"`
 	AccessToken string `json:"access_token"`
-	ExpiresIn   string `json:"expires_in"`
+	ExpiresIn   int64  `json:"expires_in"`
+	IsOnboarded bool   `json:"is_onboarded"`
 }
