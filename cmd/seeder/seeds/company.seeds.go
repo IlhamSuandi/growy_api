@@ -9,21 +9,24 @@ import (
 
 var Company model.Company
 
-func SeedCompany(db *gorm.DB) error {
+func SeedCompany(db *gorm.DB) {
 	log := utils.Log
 	log.Info("seeding company")
 
 	Company = model.Company{
 		Name:       "growy",
 		Address:    "jakarta",
-		OwnerEmail: UserAdmin.Email,
+		OwnerEmail: UserOwner.Email,
+		Options: model.CompanyOption{
+			UseCheckout:  false,
+			WorkingHours: 8,
+		},
 	}
 
 	companyRepo := repository.NewCompanyRepository(db)
 	if err := companyRepo.CreateCompany(&Company); err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	log.Info("successfully seeded company")
-	return nil
 }

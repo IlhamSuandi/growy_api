@@ -9,6 +9,8 @@ import (
 
 type CompanyRepository interface {
 	CreateCompany(company *model.Company) error
+	GetUserCompanies(userEmail string) ([]model.Company, error)
+	GetUserCompanyByName(email string, companyName string) (*model.Company, error)
 }
 
 type companyRepository struct {
@@ -32,4 +34,23 @@ func (cr *companyRepository) CreateCompany(company *model.Company) error {
 	}
 
 	return nil
+}
+
+func (cr *companyRepository) GetUserCompanies(userEmail string) ([]model.Company, error) {
+	var companies []model.Company
+	if err := cr.db.Where("owner_email = ?", userEmail).Find(&companies).Error; err != nil {
+		return nil, err
+	}
+
+	return companies, nil
+}
+
+func (cr *companyRepository) GetUserCompanyByName(email string, companyName string) (*model.Company, error) {
+	var company model.Company
+	result := cr.db.Where("owner_email = ? and name = ?", email, companyName).First(&company)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &company, nil
 }
