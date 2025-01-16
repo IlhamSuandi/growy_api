@@ -31,31 +31,18 @@ func NewAttendanceController(attendanceUsecase usecase.AttendanceUsecase) *Atten
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param token path string true "token"
 // @Param request body dto.CheckInRequest true "request body"
 // @Failure 403 {object} types.ErrorResponse "token is empty"
 // @Failure 400 {object} types.ErrorResponse "request body is invalid"
 // @Failure 401 {object} types.ErrorResponse "Unauthorized"
 // @Success 200 {object} types.Response{data=dto.CheckInResponse} "Successfully Checked In Attendance"
-// @Router /attendances/check-in/{token} [post]
+// @Router /attendance/check-in [post]
 func (ac *AttendanceController) CheckIn(w http.ResponseWriter, r *http.Request) {
 	var payload dto.CheckInRequest
 
-	ac.Logger.Info("getting checkin token")
-	checkinToken := r.PathValue("token")
-	if checkinToken == "" {
-		ac.Logger.Errorf("token is required")
-		response.WriteError(w, http.StatusForbidden, types.ErrorResponse{
-			Message: "token is required",
-			Error:   "token is required",
-			Status:  http.StatusForbidden,
-		})
-		return
-	}
-
-	ac.Logger.Info("parsing request body")
+	ac.Logger.Info("[/attendance/check-in] parsing request body")
 	if err := utils.ParseJSON(r, &payload); err != nil {
-		ac.Logger.Errorf("error parsing request body %s", err)
+		ac.Logger.Errorf("[/attendance/check-in] error parsing request body %s", err)
 		response.WriteError(w, http.StatusBadRequest, types.ErrorResponse{
 			Message: "error parsing json",
 			Error:   err.Error(),
@@ -64,13 +51,13 @@ func (ac *AttendanceController) CheckIn(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ac.Logger.Info("getting user info from auth middleware")
+	ac.Logger.Info("[/attendance/check-in] getting user info from auth middleware")
 	userInfo := r.Context().Value("userInfo").(*model.User)
 
-	ac.Logger.Info("checking in attendance")
-	attendance, err := ac.AttendanceUsecase.CheckInAttendance(checkinToken, userInfo.Id, payload.Location)
+	ac.Logger.Info("[/attendance/check-in] checking in attendance")
+	attendance, err := ac.AttendanceUsecase.CheckInAttendance(userInfo.Id, payload.Location)
 	if err != nil {
-		ac.Logger.Errorf("error checking in attendance %s", err)
+		ac.Logger.Errorf("[/attendance/check-in] error checking in attendance %s", err)
 		response.WriteError(w, http.StatusUnauthorized, types.ErrorResponse{
 			Message: "error checking in attendance",
 			Error:   err.Error(),
@@ -79,7 +66,7 @@ func (ac *AttendanceController) CheckIn(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ac.Logger.Info("successfully checked in attendance")
+	ac.Logger.Info("[/attendance/check-in] successfully checked in attendance")
 	response.WriteJSON(w, http.StatusOK, types.Response{
 		Message: "Successfully Checked In Attendance",
 		Data: dto.CheckInResponse{
@@ -99,19 +86,29 @@ func (ac *AttendanceController) CheckIn(w http.ResponseWriter, r *http.Request) 
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param token path string true "token"
+// @Param userId path string true "userId"
 // @Failure 403 {object} types.ErrorResponse "token is empty"
 // @Failure 400 {object} types.ErrorResponse "request body is invalid"
 // @Failure 401 {object} types.ErrorResponse "Unauthorized"
 // @Success 200 {object} types.Response{data=dto.GetAttendancesResponse} "Successfully got attendances"
-// @Router /attendances/{userUUID} [get]
+// @Router /attendance [get]
 func (ac *AttendanceController) GetUserAttendances(w http.ResponseWriter, r *http.Request) {
-	userUUID := r.PathValue("userUUID")
+	userUUID := r.URL.Query().Get("userId")
 
-	ac.Logger.Info("parsing user uuid")
+	if userUUID == "" {
+		ac.Logger.Errorf("[/attendance] token is required")
+		response.WriteError(w, http.StatusForbidden, types.ErrorResponse{
+			Message: "token is required",
+			Error:   "token is required",
+			Status:  http.StatusForbidden,
+		})
+		return
+	}
+
+	ac.Logger.Info("[/attendance] parsing user uuid")
 	parsedUserId, err := uuid.Parse(userUUID)
 	if err != nil {
-		ac.Logger.Errorf("error parsing user id %s", err)
+		ac.Logger.Errorf("[/attendance] error parsing user id %s", err)
 		response.WriteError(w, http.StatusInternalServerError, types.ErrorResponse{
 			Message: "error parsing UUID",
 			Error:   err.Error(),
@@ -120,10 +117,10 @@ func (ac *AttendanceController) GetUserAttendances(w http.ResponseWriter, r *htt
 		return
 	}
 
-	ac.Logger.Info("getting user attendances")
+	ac.Logger.Info("[/attendance] getting user attendances")
 	attendances, err := ac.AttendanceUsecase.GetUserAttendances(parsedUserId)
 	if err != nil {
-		ac.Logger.Errorf("error getting user attendances %s", err)
+		ac.Logger.Errorf("[/attendance] error getting user attendances %s", err)
 		response.WriteError(w, http.StatusInternalServerError, types.ErrorResponse{
 			Message: "error getting attendances",
 			Error:   err.Error(),
@@ -132,7 +129,7 @@ func (ac *AttendanceController) GetUserAttendances(w http.ResponseWriter, r *htt
 		return
 	}
 
-	ac.Logger.Info("successfully got user attendances")
+	ac.Logger.Info("[/attendance] successfully got user attendances")
 	response.WriteJSON(w, http.StatusOK, types.Response{
 		Message: "Successfully got attendances",
 		Data: dto.GetAttendancesResponse{
@@ -145,13 +142,13 @@ func (ac *AttendanceController) GetUserAttendances(w http.ResponseWriter, r *htt
 
 // check out attendance
 func (ac *AttendanceController) CheckOut(w http.ResponseWriter, r *http.Request) {
-	ac.Logger.Info("getting user info from auth middleware")
+	ac.Logger.Info("[/attendance/check-out] getting user info from auth middleware")
 	userInfo := r.Context().Value("userInfo").(*model.User)
 
-	ac.Logger.Info("checking out attendance")
+	ac.Logger.Info("[/attendance/check-out] checking out attendance")
 	attendance, err := ac.AttendanceUsecase.CheckOutAttendance(userInfo.Id)
 	if err != nil {
-		ac.Logger.Errorf("error checking out attendance %s", err)
+		ac.Logger.Errorf("[/attendance/check-in/{token}] error checking out attendance %s", err)
 		response.WriteError(w, http.StatusBadRequest, types.ErrorResponse{
 			Message: "error checking out attendance",
 			Error:   err.Error(),
@@ -160,7 +157,7 @@ func (ac *AttendanceController) CheckOut(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	ac.Logger.Info("successfully checked out attendance")
+	ac.Logger.Info("[/attendance/check-out] successfully checked out attendance")
 	response.WriteJSON(w, http.StatusOK, dto.CheckoutRequest{
 		UserId:   userInfo.UUID,
 		Status:   attendance.Status,

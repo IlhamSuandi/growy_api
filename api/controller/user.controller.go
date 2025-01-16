@@ -36,10 +36,21 @@ func NewUserController(userUsecase usecase.UserUsecase) *userController {
 // @Success 200 {object} types.Response{data=model.User} "Successfully get all users"
 // @Router /users/{userID} [get]
 func (uc *userController) GetUserId(w http.ResponseWriter, r *http.Request) {
-	uc.Logger.Info("parsing user id")
-	userId, err := uuid.Parse(r.PathValue("userID"))
+	uc.Logger.Info("[/users/{userID}] checking user uuid")
+	pathValue := r.PathValue("userUUID")
+	if pathValue == "" {
+		response.WriteError(w, http.StatusBadRequest, types.ErrorResponse{
+			Message: "Error",
+			Error:   "user uuid is required",
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	uc.Logger.Info("[/users/{userID}] parsing user uuid")
+	userId, err := uuid.Parse(pathValue)
 	if err != nil {
-		uc.Logger.Errorf("error parsing user id %s", err)
+		uc.Logger.Errorf("[/users/{userID}] error parsing user id %s", err)
 		response.WriteError(w, http.StatusBadRequest, types.ErrorResponse{
 			Message: "Error",
 			Error:   err.Error(),
@@ -48,10 +59,10 @@ func (uc *userController) GetUserId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uc.Logger.Info("getting user by user id")
+	uc.Logger.Info("[/users/{userID}] getting user by user id")
 	user, err := uc.UserUsecase.GetUserByUserId(userId)
 	if err != nil {
-		uc.Logger.Errorf("error getting user by user id %s", err)
+		uc.Logger.Errorf("[/users/{userID}] error getting user by user id %s", err)
 		response.WriteError(w, http.StatusInternalServerError, types.ErrorResponse{
 			Message: "Error",
 			Error:   err.Error(),
@@ -60,7 +71,7 @@ func (uc *userController) GetUserId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uc.Logger.Info("successfully get user by user id")
+	uc.Logger.Info("[/users/{userID}] successfully get user by user id")
 	response.WriteJSON(w, http.StatusOK, types.Response{
 		Message: "Get User",
 		Data:    user,

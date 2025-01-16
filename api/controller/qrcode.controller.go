@@ -33,19 +33,30 @@ func NewQrCodeController(qrcodeUsecase usecase.QrCodeUsecase, userUsecase usecas
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param userId path string true "userId"
+// @Param request body dto.CreateQrRequest true "Request body"
 // @Failure 500 {object} types.ErrorResponse "error creating qrcode"
 // @Failure 401 {object} types.ErrorResponse "Unauthorized"
 // @Success 200 {object} types.Response{data=dto.CreateQrResponse} "successfully created qrcode"
-// @Router /qrcode/{userId} [post]
+// @Router /qrcode [post]
 func (qc *QrCodeController) CreateQr(w http.ResponseWriter, r *http.Request) {
-	qc.Logger.Info("getting user uuid from path")
-	userId := uuid.MustParse(r.PathValue("userUUID"))
+	qc.Logger.Infof("[%s /qrcode] parsing request body", r.Method)
 
-	qc.Logger.Info("getting user by user id")
-	user, err := qc.UserUsecase.GetUserByUserId(userId)
+	var payload dto.CreateQrRequest
+	// get the request body
+	if err := utils.ParseJSON(r, &payload); err != nil {
+		qc.Logger.Errorf("[%s /qrcode] error parsing request body %s", r.Method, err)
+		response.WriteError(w, http.StatusBadRequest, types.ErrorResponse{
+			Message: "Error Parsing Request Body",
+			Error:   err.Error(),
+			Status:  http.StatusBadRequest,
+		})
+		return
+	}
+
+	qc.Logger.Infof("[%s /qrcode] getting user by user id", r.Method)
+	user, err := qc.UserUsecase.GetUserByUserId(payload.UserId)
 	if err != nil {
-		qc.Logger.Errorf("error getting user by user id %s", err)
+		qc.Logger.Errorf("[%s /qrcode] error getting user by user id %s", r.Method, err)
 		response.WriteError(w, http.StatusUnauthorized, types.ErrorResponse{
 			Message: "User not found",
 			Error:   err.Error(),
@@ -54,10 +65,10 @@ func (qc *QrCodeController) CreateQr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	qc.Logger.Info("creating user qrcode")
+	qc.Logger.Infof("[%s /qrcode] creating user qrcode", r.Method)
 	qrCode, qrData, err := qc.QrCodeUsecase.CreateQrCode(*user)
 	if err != nil {
-		qc.Logger.Errorf("error creating user qrcode %s", err)
+		qc.Logger.Errorf("[%s /qrcode] error creating user qrcode %s", r.Method, err)
 		response.WriteError(w, http.StatusInternalServerError, types.ErrorResponse{
 			Message: "error creating qrcode",
 			Error:   err.Error(),
@@ -66,7 +77,7 @@ func (qc *QrCodeController) CreateQr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	qc.Logger.Info("successfully created user qrcode")
+	qc.Logger.Infof("[%s /qrcode] successfully created user qrcode", r.Method)
 	response.WriteJSON(w, http.StatusOK, types.Response{
 		Message: "successfully created qrcode",
 		Data: dto.CreateQrResponse{
@@ -85,29 +96,45 @@ func (qc *QrCodeController) CreateQr(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param userId path string true "userId"
+// @Param userId query string true "userId"
 // @Failure 500 {object} types.ErrorResponse "error getting qrcode"
 // @Failure 401 {object} types.ErrorResponse "Unauthorized"
 // @Success 200 {object} types.Response{data=dto.CreateQrResponse} "successfully created qrcode"
-// @Router /qrcode/{userId} [get]
+// @Router /qrcode [get]
 func (qc *QrCodeController) GetUserQr(w http.ResponseWriter, r *http.Request) {
-	qc.Logger.Info("getting user uuid from path")
-	pathUserId := uuid.MustParse(r.PathValue("userUUID"))
+	qc.Logger.Infof("[%s /qrcode] getting user uuid from path", r.Method)
+	// pathUserId := uuid.MustParse(r.PathValue("userId"))
+	pathUserId := r.URL.Query().Get("userId")
+	if pathUserId == "" {
+		qc.Logger.Errorf("[%s /qrcode] token is required", r.Method)
+		response.WriteError(w, http.StatusForbidden, types.ErrorResponse{
+			Message: "token is required",
+			Error:   "token is required",
+			Status:  http.StatusForbidden,
+		})
+		return
+	}
+
+	qc.Logger.Infof("[%s /qrcode] parsing user uuid", r.Method)
+	parsedUserId, err := uuid.Parse(pathUserId)
+
+	qc.Logger.Infof("[%s /qrcode] getting user info from auth middleware", r.Method)
 	userInfo := r.Context().Value("userInfo").(*model.User)
 
-	if pathUserId != userInfo.UUID {
-		qc.Logger.Errorf("user uuid is not equal")
+	if parsedUserId != userInfo.UUID {
+		qc.Logger.Errorf("[%s %s /qrcode] user uuid is not equal", r.Method, r.Method)
 		response.WriteError(w, http.StatusForbidden, types.ErrorResponse{
 			Message: "User UUID is not equal",
 			Error:   "User UUID is not equal",
 			Status:  http.StatusForbidden,
 		})
+		return
 	}
 
-	qc.Logger.Info("getting user qrcode")
+	qc.Logger.Infof("[%s /qrcode] getting user qrcode", r.Method)
 	qrCode, qrData, err := qc.QrCodeUsecase.GetUserQr(userInfo.Id)
 	if err != nil {
-		qc.Logger.Errorf("error getting user qrcode %s", err)
+		qc.Logger.Errorf("[%s /qrcode] error getting user qrcode %s", r.Method, err)
 		response.WriteError(w, http.StatusInternalServerError, types.ErrorResponse{
 			Message: "error getting qrcode",
 			Error:   err,
@@ -116,7 +143,7 @@ func (qc *QrCodeController) GetUserQr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	qc.Logger.Info("successfully get user qrcode")
+	qc.Logger.Infof("[%s /qrcode] successfully get user qrcode", r.Method)
 	response.WriteJSON(w, http.StatusOK, types.Response{
 		Message: "successfully get qrcode",
 		Data: dto.GetQrResponse{
