@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	permission "github.com/ilhamSuandi/business_assistant/constant"
 	"github.com/ilhamSuandi/business_assistant/database/model"
 	"github.com/ilhamSuandi/business_assistant/pkg/response"
 	"github.com/ilhamSuandi/business_assistant/repository"
@@ -29,6 +30,7 @@ func Permission(requiredPermissions []string, db *gorm.DB, next http.Handler) ht
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if len(requiredPermissions) == 0 || slices.Contains(requiredPermissions, "all") {
 			next.ServeHTTP(w, r)
+			return
 		}
 
 		log := utils.Log
@@ -36,10 +38,33 @@ func Permission(requiredPermissions []string, db *gorm.DB, next http.Handler) ht
 		userRepo := repository.NewUserRepository(db)
 		requestMethod := r.Method
 
-		log.Info("getting user permission")
+		// admin can access all resources
+		if userInfo.Role == "admin" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// admin restricted routes
+		if slices.Contains(requiredPermissions, permission.Admin) {
+			log.Error("[middleware] not enough permission")
+			response.WriteError(w, http.StatusForbidden, types.ErrorResponse{
+				Message: "you don't have permission to access this resource",
+				Error:   "you don't have permission to access this resource",
+				Status:  http.StatusForbidden,
+			})
+			return
+		}
+
+		// owner can access all resources except admin restricted routes
+		if userInfo.Role == "owner" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// getting user permissions
 		userPermission, err := userRepo.GetUserPermission(userInfo.Id)
 		if err != nil {
-			log.Errorf("error getting user permission %s", err)
+			log.Errorf("[middleware] error getting user permission %s", err)
 
 			response.WriteError(w, http.StatusForbidden, types.ErrorResponse{
 				Message: "error getting user permission",
@@ -49,7 +74,7 @@ func Permission(requiredPermissions []string, db *gorm.DB, next http.Handler) ht
 			return
 		}
 
-		log.Info("checking if permission is valid")
+		// verify if user has required permission
 		for _, permission := range *userPermission {
 			permissionActions := strings.Split(permission.Action, ",")
 
@@ -58,13 +83,13 @@ func Permission(requiredPermissions []string, db *gorm.DB, next http.Handler) ht
 			isAllowedAction := slices.Contains(permissionActions, "all") || slices.Contains(permissionActions, strings.ToLower(requestMethod))
 
 			if hasRequiredPermission && isAllowedAction {
-				log.Info("permission is valid")
+				// log.Info("[middleware] permission is valid")
 				next.ServeHTTP(w, r)
 				return
 			}
 		}
 
-		log.Error("not enough permission")
+		log.Error("[middleware] not enough permission")
 		response.WriteError(w, http.StatusForbidden, types.ErrorResponse{
 			Message: "you don't have permission to access this resource",
 			Error:   "you don't have permission to access this resource",

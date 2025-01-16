@@ -18,10 +18,11 @@ func Auth(next http.Handler, db *gorm.DB) http.Handler {
 		ctx := context.Background()
 		userRepo := repository.NewUserRepository(db)
 
-		log.Info("getting access token")
+		// log.Info("[middleware] getting access token")
 		accessToken, err := auth.GetAccessToken(r)
+
 		if err != nil {
-			log.Errorf("error getting access token %s", err)
+			log.Errorf("[middleware] error getting access token %s", err)
 			response.WriteError(w, http.StatusUnauthorized, types.ErrorResponse{
 				Message: "Unauthorized",
 				Error:   "Access Token is required",
@@ -30,10 +31,10 @@ func Auth(next http.Handler, db *gorm.DB) http.Handler {
 			return
 		}
 
-		log.Info("parsing access token")
+		// log.Info("[middleware] parsing access token")
 		claims, err := auth.ParseToken(accessToken)
 		if err != nil {
-			log.Errorf("error parsing access token %s", err)
+			log.Errorf("[middleware] error parsing access token %s", err)
 			response.WriteError(w, http.StatusUnauthorized, types.ErrorResponse{
 				Message: "Token is invalid",
 				Error:   err.Error(),
@@ -42,10 +43,10 @@ func Auth(next http.Handler, db *gorm.DB) http.Handler {
 			return
 		}
 
-		log.Info("getting user informations")
+		// log.Info("[middleware] getting user informations")
 		user, err := userRepo.GetUserByUserId(claims.UserId)
 		if err != nil {
-			log.Errorf("error getting user informations %s", err)
+			log.Errorf("[middleware] error getting user informations %s", err)
 			response.WriteError(w, http.StatusUnauthorized, types.ErrorResponse{
 				Message: "Unauthorized",
 				Error:   err.Error(),
@@ -54,7 +55,7 @@ func Auth(next http.Handler, db *gorm.DB) http.Handler {
 			return
 		}
 
-		log.Info("setting context")
+		// log.Info("[middleware] setting context")
 		ctx = context.WithValue(ctx, "accessToken", accessToken)
 		ctx = context.WithValue(ctx, "claims", claims)
 		ctx = context.WithValue(ctx, "userInfo", user)

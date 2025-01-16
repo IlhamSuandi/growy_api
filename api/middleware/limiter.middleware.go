@@ -12,8 +12,6 @@ import (
 func Limiter(limit rate.Limit, burst *int, next http.Handler) http.Handler {
 	log := utils.Log
 
-	// Set a default burst value if it's not provided (i.e., burst is nil)
-	log.Info("creating limiter")
 	defaultBurst := int(limit * 2)
 
 	if burst == nil {
@@ -24,7 +22,7 @@ func Limiter(limit rate.Limit, burst *int, next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !limiter.Allow() {
-			log.Error("too many requests")
+			log.Error("[middleware] too many requests")
 			response.WriteError(w, http.StatusTooManyRequests, types.ErrorResponse{
 				Message: "Too many requests",
 				Error:   "Too many requests",

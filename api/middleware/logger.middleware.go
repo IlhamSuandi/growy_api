@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ilhamSuandi/business_assistant/database/model"
+	"github.com/ilhamSuandi/business_assistant/utils"
 	"gorm.io/gorm"
 )
 
@@ -41,8 +43,18 @@ func (r *loggingResponseWriter) WriteHeader(statusCode int) {
 	r.responseData.status = statusCode
 }
 
-func Log(db *gorm.DB, next http.Handler) http.Handler {
+func Log(next http.Handler, db *gorm.DB) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log := utils.Log
+		var path string
+
+		if strings.Contains(r.URL.Path, "/api/v1") {
+			path = strings.Split(r.URL.Path, "/api/v1")[1]
+		} else {
+			path = r.URL.Path
+		}
+
+		log.Infof("[%s %s] accepting %s request to %s", r.Method, path, r.Method, r.URL.Path)
 		start := time.Now()
 
 		responseData := &responseData{
@@ -66,8 +78,10 @@ func Log(db *gorm.DB, next http.Handler) http.Handler {
 		}
 
 		action := "request"
+		userInfo := r.Context().Value("userInfo").(*model.User)
 
 		db.Create(&model.Log{
+			Email:         userInfo.Email,
 			RemoteAddr:    &ipAddress,
 			Action:        &action,
 			Method:        &r.Method,
@@ -77,5 +91,7 @@ func Log(db *gorm.DB, next http.Handler) http.Handler {
 			Size:          responseData.size,
 			UserAgent:     r.Header.Get("User-Agent"),
 		})
+
+		log.Infof("[%s %s] request finished at %s", r.Method, path, executionTime)
 	})
 }
