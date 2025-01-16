@@ -44,7 +44,7 @@ func (sr *sessionRepository) SaveSession(session model.Session) error {
 }
 
 func (sr *sessionRepository) DeleteSession(sessionId uuid.UUID) error {
-	result := sr.db.Where("session_id = ?", sessionId).Delete(&model.Session{})
+	result := sr.db.Where("uuid = ?", sessionId).Delete(&model.Session{})
 	if result.Error != nil {
 		return result.Error
 	}
