@@ -1,3 +1,5 @@
+include .env
+
 run: build
 	@./bin/api
 
@@ -19,7 +21,7 @@ build:
 seeder:
 	@go run ./cmd/seeder
 
-swagger-init:
+swagger:
 	@swag init -d ./ -g ./cmd/server/main.go
 
 tests:
