@@ -24,9 +24,15 @@ var (
 	JWT_REFRESH_EXPIRATION     int
 	BASE_URL                   string
 	URL                        string
+	CLIENT_URL                 string
 	OAUTH2_CLIENT_ID           string
 	OAUTH2_CLIENT_SECRET       string
 	OAUTH2_ClIENT_REDIRECT_URL string
+	SMTPHOST                   string
+	SMTPPORT                   int
+	SMTPUSERNAME               string
+	SMTPPASSWORD               string
+	EMAIL_FROM                 string
 )
 
 func init() {
@@ -40,6 +46,11 @@ func init() {
 	jwtRefreshExpiration, err := strconv.Atoi(GetEnv("JWT_REFRESH_EXPIRATION", "2592000"))
 	if err != nil {
 		jwtRefreshExpiration = 2592000
+	}
+
+	smtpPort, err := strconv.Atoi(GetEnv("SMTP_PORT", "587"))
+	if err != nil {
+		SMTPPORT = 587
 	}
 
 	APP_ENV = GetEnv("APP_ENV", "development")
@@ -56,9 +67,15 @@ func init() {
 	JWT_REFRESH_EXPIRATION = jwtRefreshExpiration
 	BASE_URL = GetEnv("BASE_URL", "http://localhost:5000")
 	URL = GetEnv("URL", "http://localhost:5000/api/v1")
+  CLIENT_URL = GetEnv("CLIENT_URL", "http://localhost:3000")
 	OAUTH2_CLIENT_ID = GetEnv("OAUTH2_CLIENT_ID", "")
 	OAUTH2_CLIENT_SECRET = GetEnv("OAUTH2_CLIENT_SECRET", "")
 	OAUTH2_ClIENT_REDIRECT_URL = GetEnv("OAUTH2_REDIRECT_URL", "")
+	SMTPHOST = GetEnv("SMTP_HOST", "smtp.gmail.com")
+	SMTPPORT = smtpPort
+	SMTPUSERNAME = GetEnv("SMTP_USERNAME", "your-email@gmail.com")
+	SMTPPASSWORD = GetEnv("SMTP_PASSWORD", "your-password")
+	EMAIL_FROM = GetEnv("EMAIL_FROM", "your-email")
 }
 
 func GetEnv(key string, defaultValue string) string {
