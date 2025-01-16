@@ -11,7 +11,7 @@ import (
 )
 
 // @title Growy API
-// @version 1.0.0
+// @version 0.1.0
 // @description Growy API
 
 // @host localhost:5000
