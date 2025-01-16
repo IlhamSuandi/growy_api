@@ -14,7 +14,7 @@ import (
 )
 
 type AttendanceUsecase interface {
-	CheckInAttendance(checkinToken string, userId uint, location string) (*model.Attendance, error)
+	CheckInAttendance(userId uint, location string) (*model.Attendance, error)
 	GetUserAttendances(userId uuid.UUID) ([]*model.Attendance, error)
 	CheckOutAttendance(userId uint) (*model.Attendance, error)
 }
@@ -22,27 +22,28 @@ type AttendanceUsecase interface {
 type attendanceUsecase struct {
 	logger         *logrus.Logger
 	attendanceRepo repository.AttendanceRepository
+	companyRepo    repository.CompanyRepository
 	qrCodeRepo     repository.QrCodeRepository
 }
 
 func NewAttendanceUsecase(
 	attendanceRepo repository.AttendanceRepository,
 	qrCodeRepo repository.QrCodeRepository,
+	companyRepo repository.CompanyRepository,
 ) AttendanceUsecase {
 	return &attendanceUsecase{
 		attendanceRepo: attendanceRepo,
 		qrCodeRepo:     qrCodeRepo,
+		companyRepo:    companyRepo,
 		logger:         utils.Log,
 	}
 }
 
 func (au *attendanceUsecase) CheckInAttendance(
-	checkinToken string,
 	userId uint,
 	location string,
 ) (*model.Attendance, error) {
 	// get current time
-	au.logger.Info("getting current time")
 	now := time.Now()
 
 	// check check-in token
@@ -54,11 +55,6 @@ func (au *attendanceUsecase) CheckInAttendance(
 	// check if qr code is used
 	if qrData.IsUsed {
 		return nil, errors.New("you have already checked in")
-	}
-
-	// check if qr is valid
-	if qrData.Code != checkinToken {
-		return nil, errors.New("checkin token is invalid")
 	}
 
 	// check if qr is expired
@@ -102,7 +98,6 @@ func (au *attendanceUsecase) CheckInAttendance(
 		return nil, err
 	}
 
-	au.logger.Info("Checkin attendance created successfully")
 	return attendance, nil
 }
 
