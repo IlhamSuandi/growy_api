@@ -15,7 +15,7 @@ type AuthUsecase interface {
 	CreateSession(session model.Session) error
 	IsUserExists(email string) (model.User, bool)
 	CreateUser(user *model.User) error
-	UpdateUser(user *model.User) error
+	UpdateUser(userId uint, user model.User) (*model.User, error)
 	CreateToken(session types.CreateToken) (string, *types.JwtClaims, error)
 	DeleteUserSession(sessionId uuid.UUID) error
 }
@@ -65,13 +65,13 @@ func (au *authUsecase) CreateUser(user *model.User) error {
 }
 
 func (au *authUsecase) CreateToken(session types.CreateToken) (string, *types.JwtClaims, error) {
-	return auth.CreateToken(session)
+	return auth.CreateSessionToken(session)
 }
 
 func (au *authUsecase) DeleteUserSession(sessionId uuid.UUID) error {
 	return au.sessionRepo.DeleteSession(sessionId)
 }
 
-func (au *authUsecase) UpdateUser(user *model.User) error {
-	return au.UpdateUser(user)
+func (au *authUsecase) UpdateUser(userId uint, user model.User) (*model.User, error) {
+	return au.userRepo.UpdateUser(userId, user)
 }
