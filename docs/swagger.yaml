@@ -1,5 +1,34 @@
 basePath: /api/v1
 definitions:
+  dto.AddEmployeeRequest:
+    properties:
+      branch_name:
+        example: main branch
+        type: string
+      company_name:
+        example: company name
+        type: string
+      email:
+        example: userone@gmail.com
+        type: string
+      position:
+        example: manager
+        type: string
+    required:
+    - branch_name
+    - company_name
+    - email
+    - position
+    type: object
+  dto.AddEmployeeResponse:
+    properties:
+      email:
+        example: userone@gmail.com
+        type: string
+      position:
+        example: manager
+        type: string
+    type: object
   dto.CheckInRequest:
     properties:
       location:
@@ -27,6 +56,29 @@ definitions:
         example: 00000000-0000-0000-0000-000000000000
         type: string
     type: object
+  dto.CreateBranchRequest:
+    properties:
+      address:
+        example: jakarta
+        type: string
+      branch_name:
+        example: branch name
+        type: string
+      company_name:
+        example: company name
+        type: string
+    required:
+    - address
+    - branch_name
+    - company_name
+    type: object
+  dto.CreateQrRequest:
+    properties:
+      user_id:
+        type: string
+    required:
+    - user_id
+    type: object
   dto.CreateQrResponse:
     properties:
       code:
@@ -40,15 +92,6 @@ definitions:
           type: integer
         type: array
     type: object
-  dto.GetAttendancesRequest:
-    properties:
-      user_id:
-        example: 00000000-0000-0000-0000-000000000000
-        minLength: 10
-        type: string
-    required:
-    - user_id
-    type: object
   dto.GetAttendancesResponse:
     properties:
       attendances:
@@ -57,6 +100,13 @@ definitions:
         type: array
       user_id:
         type: string
+    type: object
+  dto.GetUserCompaniesResponse:
+    properties:
+      company:
+        items:
+          $ref: '#/definitions/model.Company'
+        type: array
     type: object
   dto.LoginRequest:
     properties:
@@ -93,6 +143,8 @@ definitions:
       email:
         example: userone@gmail.com
         type: string
+      token:
+        $ref: '#/definitions/dto.TokenResponse'
       username:
         example: userone
         type: string
@@ -102,93 +154,235 @@ definitions:
       access_token:
         type: string
       expires_in:
-        type: string
+        type: integer
       token_type:
         type: string
     type: object
   model.Attendance:
     properties:
-      attendanceId:
+      check_in:
         type: string
-      checkIn:
+      check_out:
         type: string
-      checkOut:
-        type: string
-      createdAt:
+      created_at:
         type: string
       date:
         type: string
-      id:
-        type: integer
       location:
         type: string
       status:
         type: string
-      updatedAt:
+      updated_at:
         type: string
       users:
         items:
           $ref: '#/definitions/model.User'
         type: array
+      uuid:
+        type: string
+    type: object
+  model.Branch:
+    properties:
+      address:
+        type: string
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      employees:
+        items:
+          $ref: '#/definitions/model.Employee'
+        type: array
+      name:
+        type: string
+      roles:
+        items:
+          $ref: '#/definitions/model.Role'
+        type: array
+      updated_at:
+        type: string
+      uuid:
+        type: string
+      work_schedule:
+        $ref: '#/definitions/model.WorkSchedule'
+    type: object
+  model.Company:
+    properties:
+      address:
+        type: string
+      branches:
+        items:
+          $ref: '#/definitions/model.Branch'
+        type: array
+      created_at:
+        type: string
+      name:
+        type: string
+      options:
+        $ref: '#/definitions/model.CompanyOption'
+      owner_email:
+        type: string
+      updated_at:
+        type: string
+      uuid:
+        type: string
+      work_schedule:
+        $ref: '#/definitions/model.WorkSchedule'
+    type: object
+  model.CompanyOption:
+    properties:
+      check_in_time:
+        type: string
+      check_out_time:
+        type: string
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      updated_at:
+        type: string
+      use_checkout:
+        type: boolean
+      uuid:
+        type: string
+      workingHours:
+        type: integer
+    type: object
+  model.Employee:
+    properties:
+      branch_id:
+        type: integer
+      created_at:
+        type: string
+      employee_email:
+        type: string
+      pending:
+        type: boolean
+      position:
+        type: string
+      salary:
+        $ref: '#/definitions/model.Salary'
+      updated_at:
+        type: string
+      uuid:
+        type: string
+      work_schedule:
+        $ref: '#/definitions/model.WorkSchedule'
+    type: object
+  model.Log:
+    properties:
+      action:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      executionTime:
+        type: string
+      method:
+        type: string
+      path:
+        type: string
+      remoteAddr:
+        type: string
+      size:
+        type: integer
+      status:
+        type: integer
+      updated_at:
+        type: string
+      userAgent:
+        type: string
+      uuid:
+        type: string
+    type: object
+  model.Permission:
+    properties:
+      action:
+        description: get,post,put/patch,delete
+        type: string
+      created_at:
+        type: string
+      resource:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      uuid:
+        type: string
     type: object
   model.QRCode:
     properties:
       code:
         type: string
-      createdAt:
+      created_at:
         type: string
-      expiresAt:
+      expires_at:
         type: string
-      id:
-        type: integer
-      isUsed:
+      is_used:
         type: boolean
-      qrcodeId:
+      updated_at:
         type: string
-      updatedAt:
-        type: string
-      userId:
+      user_id:
+        type: integer
+      uuid:
         type: string
     type: object
   model.Role:
     properties:
-      createdAt:
-        type: string
-      description:
-        type: string
-      id:
+      branch_id:
         type: integer
+      created_at:
+        type: string
       name:
         type: string
-      roleId:
+      updated_at:
         type: string
-      updatedAt:
+      user_id:
+        type: integer
+      uuid:
+        type: string
+    type: object
+  model.Salary:
+    properties:
+      created_at:
+        type: string
+      currentEarnings:
+        type: integer
+      employeeEmail:
+        type: string
+      hourly:
+        type: integer
+      monthly:
+        type: integer
+      updated_at:
+        type: string
+      uuid:
         type: string
     type: object
   model.Session:
     properties:
-      createdAt:
+      created_at:
         type: string
-      expiresAt:
+      expires_at:
         type: string
-      id:
-        type: integer
-      ipaddress:
+      ip_address:
         type: string
-      isRevoked:
+      is_revoked:
         type: boolean
-      refreshToken:
+      refresh_token:
         type: string
-      sessionId:
+      updated_at:
         type: string
-      updatedAt:
-        type: string
-      userAgent:
+      user_agent:
         type: string
       users:
         items:
           $ref: '#/definitions/model.User'
         type: array
+      uuid:
+        type: string
     type: object
   model.User:
     properties:
@@ -196,29 +390,61 @@ definitions:
         items:
           $ref: '#/definitions/model.Attendance'
         type: array
-      createdAt:
+      auth_provider:
+        type: string
+      company:
+        items:
+          $ref: '#/definitions/model.Company'
+        type: array
+      created_at:
         type: string
       email:
         type: string
-      id:
-        type: integer
-      password:
-        type: string
+      employee:
+        $ref: '#/definitions/model.Employee'
+      is_email_verified:
+        type: boolean
+      log:
+        $ref: '#/definitions/model.Log'
+      permissions:
+        items:
+          $ref: '#/definitions/model.Permission'
+        type: array
       qrcode:
         $ref: '#/definitions/model.QRCode'
-      roles:
-        items:
-          $ref: '#/definitions/model.Role'
-        type: array
+      role:
+        description: admin, owner, employee
+        type: string
       sessions:
         items:
           $ref: '#/definitions/model.Session'
         type: array
-      updatedAt:
-        type: string
-      userId:
+      updated_at:
         type: string
       username:
+        type: string
+      uuid:
+        type: string
+    type: object
+  model.WorkSchedule:
+    properties:
+      branch_id:
+        type: integer
+      company_id:
+        type: integer
+      created_at:
+        type: string
+      employee_id:
+        type: integer
+      end_time:
+        type: string
+      start_time:
+        type: string
+      updated_at:
+        type: string
+      uuid:
+        type: string
+      working_day:
         type: string
     type: object
   types.ErrorResponse:
@@ -247,25 +473,19 @@ info:
     url: https://github.com/ilhamSuandi
   description: Growy API
   title: Growy API
-  version: 1.0.0
+  version: 0.1.0
 paths:
-  /attendances:
-    post:
+  /attendance:
+    get:
       consumes:
       - application/json
       description: get specific user attendances
       parameters:
-      - description: token
+      - description: userId
         in: path
-        name: token
+        name: userId
         required: true
         type: string
-      - description: request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/dto.GetAttendancesRequest'
       produces:
       - application/json
       responses:
@@ -295,17 +515,12 @@ paths:
       summary: Get User Attendances
       tags:
       - Attendance
-  /attendances/check-in/{token}:
+  /attendance/check-in:
     post:
       consumes:
       - application/json
       description: daily checkin user, use qrcode to check in
       parameters:
-      - description: token
-        in: path
-        name: token
-        required: true
-        type: string
       - description: request body
         in: body
         name: request
@@ -341,6 +556,72 @@ paths:
       summary: check in user
       tags:
       - Attendance
+  /auth/google/callback:
+    get:
+      consumes:
+      - application/json
+      description: Handles the Google OAuth callback, exchanges the code for a token,
+        and creates/updates a user.
+      parameters:
+      - description: State for OAuth validation
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: Authorization code received from Google
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully Logged In
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokenResponse'
+              type: object
+        "400":
+          description: Bad Request, Invalid Code or State
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "403":
+          description: Forbidden, Invalid token exchange or user info
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Google OAuth callback handler
+      tags:
+      - Auth
+  /auth/google/login:
+    get:
+      consumes:
+      - application/json
+      description: Initiates Google OAuth 2.0 login by generating a state and redirecting
+        to Google's authorization URL
+      produces:
+      - application/json
+      responses:
+        "303":
+          description: Redirect to Google OAuth 2.0 login page
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Redirects user to Google's OAuth 2.0 authentication page
+      tags:
+      - Auth
   /auth/login:
     post:
       consumes:
@@ -378,6 +659,35 @@ paths:
           schema:
             $ref: '#/definitions/types.ErrorResponse'
       summary: login as user
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: this endpoint used for logout user and remove user refresh token
+        and accesstoken
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully Renewed Access Token
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.TokenResponse'
+              type: object
+        "303":
+          description: 'Redirect: User must log in again'
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: 'Unauthorized: Invalid or expired refresh token'
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      summary: Logout User
       tags:
       - Auth
   /auth/register:
@@ -419,10 +729,8 @@ paths:
       summary: Register as user
       tags:
       - Auth
-  /auth/renew:
-    post:
-      consumes:
-      - application/json
+  /auth/token/renew:
+    get:
       produces:
       - application/json
       responses:
@@ -446,14 +754,204 @@ paths:
       summary: Renew Access Token
       tags:
       - Auth
-  /qrcode/{userId}:
+  /branch:
+    get:
+      consumes:
+      - application/json
+      description: getting company branches that only owner can get [owner only]
+      parameters:
+      - description: company name
+        in: query
+        name: company_name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created branch
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Branch'
+              type: object
+        "400":
+          description: request body is invalid
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: '[owner only] get company branches'
+      tags:
+      - Branch
+    post:
+      consumes:
+      - application/json
+      description: creating new branch using company name that only owner can create
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateBranchRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully created branch
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Branch'
+              type: object
+        "400":
+          description: request body is invalid
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: '[owner only] create new branch using company name'
+      tags:
+      - Branch
+  /company:
+    get:
+      consumes:
+      - application/json
+      description: get all companies of owner
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully get owner companies
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetUserCompaniesResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: get owner companies
+      tags:
+      - Company
+  /employee:
+    post:
+      consumes:
+      - application/json
+      description: invite user to join company
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddEmployeeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully sent invitation email
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AddEmployeeResponse'
+              type: object
+        "201":
+          description: Successfully Added Employee
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AddEmployeeResponse'
+              type: object
+        "400":
+          description: request body is invalid
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add Employee
+      tags:
+      - Employee
+  /me:
+    get:
+      consumes:
+      - application/json
+      description: get all informations about myself
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully get myself informations
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: get myself informations
+      tags:
+      - Me
+  /qrcode:
     get:
       consumes:
       - application/json
       description: daily checkin user
       parameters:
       - description: userId
-        in: path
+        in: query
         name: userId
         required: true
         type: string
@@ -487,11 +985,12 @@ paths:
       - application/json
       description: manually re-generating user qrcode
       parameters:
-      - description: userId
-        in: path
-        name: userId
+      - description: Request body
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/dto.CreateQrRequest'
       produces:
       - application/json
       responses:

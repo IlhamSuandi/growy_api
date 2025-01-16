@@ -19,8 +19,8 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/attendances": {
-            "post": {
+        "/attendance": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -40,19 +40,10 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "token",
-                        "name": "token",
+                        "description": "userId",
+                        "name": "userId",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "request body",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.GetAttendancesRequest"
-                        }
                     }
                 ],
                 "responses": {
@@ -95,7 +86,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/attendances/check-in/{token}": {
+        "/attendance/check-in": {
             "post": {
                 "security": [
                     {
@@ -114,13 +105,6 @@ const docTemplate = `{
                 ],
                 "summary": "check in user",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "token",
-                        "name": "token",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "request body",
                         "name": "request",
@@ -166,6 +150,107 @@ const docTemplate = `{
                         "description": "token is empty",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/google/callback": {
+            "get": {
+                "description": "Handles the Google OAuth callback, exchanges the code for a token, and creates/updates a user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Google OAuth callback handler",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "State for OAuth validation",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Authorization code received from Google",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully Logged In",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request, Invalid Code or State",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden, Invalid token exchange or user info",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/google/login": {
+            "get": {
+                "description": "Initiates Google OAuth 2.0 login by generating a state and redirecting to Google's authorization URL",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Redirects user to Google's OAuth 2.0 authentication page",
+                "responses": {
+                    "303": {
+                        "description": "Redirect to Google OAuth 2.0 login page",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -228,6 +313,53 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "description": "this endpoint used for logout user and remove user refresh token and accesstoken",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout User",
+                "responses": {
+                    "200": {
+                        "description": "Successfully Renewed Access Token",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.TokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "303": {
+                        "description": "Redirect: User must log in again",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized: Invalid or expired refresh token",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
@@ -299,11 +431,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth/renew": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
+        "/auth/token/renew": {
+            "get": {
                 "produces": [
                     "application/json"
                 ],
@@ -345,7 +474,332 @@ const docTemplate = `{
                 }
             }
         },
-        "/qrcode/{userId}": {
+        "/branch": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "getting company branches that only owner can get [owner only]",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Branch"
+                ],
+                "summary": "[owner only] get company branches",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "company name",
+                        "name": "company_name",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully created branch",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Branch"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request body is invalid",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "creating new branch using company name that only owner can create",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Branch"
+                ],
+                "summary": "[owner only] create new branch using company name",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateBranchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully created branch",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Branch"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request body is invalid",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/company": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "get all companies of owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Company"
+                ],
+                "summary": "get owner companies",
+                "responses": {
+                    "200": {
+                        "description": "Successfully get owner companies",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.GetUserCompaniesResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/employee": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "invite user to join company",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Employee"
+                ],
+                "summary": "Add Employee",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully sent invitation email",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AddEmployeeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "201": {
+                        "description": "Successfully Added Employee",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AddEmployeeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "request body is invalid",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "get all informations about myself",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Me"
+                ],
+                "summary": "get myself informations",
+                "responses": {
+                    "200": {
+                        "description": "Successfully get myself informations",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/qrcode": {
             "get": {
                 "security": [
                     {
@@ -368,7 +822,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "userId",
                         "name": "userId",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -424,11 +878,13 @@ const docTemplate = `{
                 "summary": "re-generate user qrcode",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "userId",
-                        "name": "userId",
-                        "in": "path",
-                        "required": true
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateQrRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -586,6 +1042,46 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.AddEmployeeRequest": {
+            "type": "object",
+            "required": [
+                "branch_name",
+                "company_name",
+                "email",
+                "position"
+            ],
+            "properties": {
+                "branch_name": {
+                    "type": "string",
+                    "example": "main branch"
+                },
+                "company_name": {
+                    "type": "string",
+                    "example": "company name"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "userone@gmail.com"
+                },
+                "position": {
+                    "type": "string",
+                    "example": "manager"
+                }
+            }
+        },
+        "dto.AddEmployeeResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "userone@gmail.com"
+                },
+                "position": {
+                    "type": "string",
+                    "example": "manager"
+                }
+            }
+        },
         "dto.CheckInRequest": {
             "type": "object",
             "required": [
@@ -624,6 +1120,39 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateBranchRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "branch_name",
+                "company_name"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "jakarta"
+                },
+                "branch_name": {
+                    "type": "string",
+                    "example": "branch name"
+                },
+                "company_name": {
+                    "type": "string",
+                    "example": "company name"
+                }
+            }
+        },
+        "dto.CreateQrRequest": {
+            "type": "object",
+            "required": [
+                "user_id"
+            ],
+            "properties": {
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateQrResponse": {
             "type": "object",
             "properties": {
@@ -644,19 +1173,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.GetAttendancesRequest": {
-            "type": "object",
-            "required": [
-                "user_id"
-            ],
-            "properties": {
-                "user_id": {
-                    "type": "string",
-                    "minLength": 10,
-                    "example": "00000000-0000-0000-0000-000000000000"
-                }
-            }
-        },
         "dto.GetAttendancesResponse": {
             "type": "object",
             "properties": {
@@ -668,6 +1184,17 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.GetUserCompaniesResponse": {
+            "type": "object",
+            "properties": {
+                "company": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Company"
+                    }
                 }
             }
         },
@@ -719,6 +1246,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "userone@gmail.com"
                 },
+                "token": {
+                    "$ref": "#/definitions/dto.TokenResponse"
+                },
                 "username": {
                     "type": "string",
                     "example": "userone"
@@ -732,7 +1262,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "expires_in": {
-                    "type": "string"
+                    "type": "integer"
                 },
                 "token_type": {
                     "type": "string"
@@ -742,23 +1272,17 @@ const docTemplate = `{
         "model.Attendance": {
             "type": "object",
             "properties": {
-                "attendanceId": {
+                "check_in": {
                     "type": "string"
                 },
-                "checkIn": {
+                "check_out": {
                     "type": "string"
                 },
-                "checkOut": {
-                    "type": "string"
-                },
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
                 "date": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "location": {
                     "type": "string"
@@ -766,7 +1290,7 @@ const docTemplate = `{
                 "status": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 },
                 "users": {
@@ -774,6 +1298,208 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.User"
                     }
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Branch": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "company_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "employees": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Employee"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Role"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "work_schedule": {
+                    "$ref": "#/definitions/model.WorkSchedule"
+                }
+            }
+        },
+        "model.Company": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "branches": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Branch"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "options": {
+                    "$ref": "#/definitions/model.CompanyOption"
+                },
+                "owner_email": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "work_schedule": {
+                    "$ref": "#/definitions/model.WorkSchedule"
+                }
+            }
+        },
+        "model.CompanyOption": {
+            "type": "object",
+            "properties": {
+                "check_in_time": {
+                    "type": "string"
+                },
+                "check_out_time": {
+                    "type": "string"
+                },
+                "company_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "use_checkout": {
+                    "type": "boolean"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "workingHours": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Employee": {
+            "type": "object",
+            "properties": {
+                "branch_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "employee_email": {
+                    "type": "string"
+                },
+                "pending": {
+                    "type": "boolean"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "salary": {
+                    "$ref": "#/definitions/model.Salary"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "work_schedule": {
+                    "$ref": "#/definitions/model.WorkSchedule"
+                }
+            }
+        },
+        "model.Log": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "executionTime": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "remoteAddr": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "userAgent": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Permission": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "description": "get,post,put/patch,delete",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "resource": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "uuid": {
+                    "type": "string"
                 }
             }
         },
@@ -783,25 +1509,22 @@ const docTemplate = `{
                 "code": {
                     "type": "string"
                 },
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
-                "expiresAt": {
+                "expires_at": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
-                "isUsed": {
+                "is_used": {
                     "type": "boolean"
                 },
-                "qrcodeId": {
+                "updated_at": {
                     "type": "string"
                 },
-                "updatedAt": {
-                    "type": "string"
+                "user_id": {
+                    "type": "integer"
                 },
-                "userId": {
+                "uuid": {
                     "type": "string"
                 }
             }
@@ -809,22 +1532,48 @@ const docTemplate = `{
         "model.Role": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
+                "branch_id": {
                     "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
-                "roleId": {
+                "updated_at": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "user_id": {
+                    "type": "integer"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Salary": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "currentEarnings": {
+                    "type": "integer"
+                },
+                "employeeEmail": {
+                    "type": "string"
+                },
+                "hourly": {
+                    "type": "integer"
+                },
+                "monthly": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "uuid": {
                     "type": "string"
                 }
             }
@@ -832,31 +1581,25 @@ const docTemplate = `{
         "model.Session": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
-                "expiresAt": {
+                "expires_at": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
-                },
-                "ipaddress": {
+                "ip_address": {
                     "type": "string"
                 },
-                "isRevoked": {
+                "is_revoked": {
                     "type": "boolean"
                 },
-                "refreshToken": {
+                "refresh_token": {
                     "type": "string"
                 },
-                "sessionId": {
+                "updated_at": {
                     "type": "string"
                 },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "userAgent": {
+                "user_agent": {
                     "type": "string"
                 },
                 "users": {
@@ -864,6 +1607,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.User"
                     }
+                },
+                "uuid": {
+                    "type": "string"
                 }
             }
         },
@@ -876,26 +1622,42 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Attendance"
                     }
                 },
-                "createdAt": {
+                "auth_provider": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Company"
+                    }
+                },
+                "created_at": {
                     "type": "string"
                 },
                 "email": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
+                "employee": {
+                    "$ref": "#/definitions/model.Employee"
                 },
-                "password": {
-                    "type": "string"
+                "is_email_verified": {
+                    "type": "boolean"
+                },
+                "log": {
+                    "$ref": "#/definitions/model.Log"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Permission"
+                    }
                 },
                 "qrcode": {
                     "$ref": "#/definitions/model.QRCode"
                 },
-                "roles": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Role"
-                    }
+                "role": {
+                    "description": "admin, owner, employee",
+                    "type": "string"
                 },
                 "sessions": {
                     "type": "array",
@@ -903,13 +1665,45 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Session"
                     }
                 },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "userId": {
+                "updated_at": {
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.WorkSchedule": {
+            "type": "object",
+            "properties": {
+                "branch_id": {
+                    "type": "integer"
+                },
+                "company_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "employee_id": {
+                    "type": "integer"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                },
+                "working_day": {
                     "type": "string"
                 }
             }
@@ -953,7 +1747,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0.0",
+	Version:          "0.1.0",
 	Host:             "localhost:5000",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
