@@ -19,8 +19,15 @@ func RegisterRoutes(db *gorm.DB) *http.ServeMux {
 	// grouping routes to "/api/v1"
 	router.Handle("/api/v1/", http.StripPrefix("/api/v1", v1))
 
-	// use auth middleware
-	v1.Handle("/", middleware.Auth(protected, db))
+	v1.Handle(
+		"/",
+		// use auth middleware
+		middleware.Auth(
+			// enable global logger
+			middleware.Log(protected, db),
+			db,
+		),
+	)
 
 	// Health Check
 	router.HandleFunc("GET /_health",
@@ -45,14 +52,19 @@ func RegisterRoutes(db *gorm.DB) *http.ServeMux {
 	}
 
 	// Public Routes
-	AuthRoutes(v1, db, "/auth")
+	AuthRoutes(v1, db)
 
 	// Protected Routes
-	UserRoutes(protected, db, "/users")
-	AttendanceRoutes(protected, db, "/attendances")
+	UserRoutes(protected, db)
+	MeRoutes(protected, db)
+	CompanyRoutes(protected, db)
 
-	// TODO: create role middleware
-	QRCodeRoutes(protected, db, "/qrcode")
+	AttendanceRoutes(protected, db)
+
+	QRCodeRoutes(protected, db)
+	EmployeeRoutes(protected, db)
+	BranchRoutes(protected, db)
+	SalaryRoutes(protected, db)
 
 	return router
 }
