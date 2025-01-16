@@ -1,8 +1,6 @@
 package seeds
 
 import (
-	"errors"
-
 	"github.com/ilhamSuandi/business_assistant/database/model"
 	"github.com/ilhamSuandi/business_assistant/utils"
 	"gorm.io/gorm"
@@ -10,33 +8,35 @@ import (
 
 var MainBranch model.Branch
 
-func SeedBranch(db *gorm.DB) error {
+func SeedBranch(db *gorm.DB) {
 	log := utils.Log
 	log.Info("seeding branch")
 
-	employees := []model.User{
-		UserOne,
-		UserTwo,
-		UserThree,
-		UserFour,
-		UserFive,
-	}
 	MainBranch = model.Branch{
 		CompanyId: Company.Id,
 		Name:      "main",
 		Address:   "jakarta",
-		Employees: employees,
 	}
 
 	result := db.Save(&MainBranch)
 	if result.Error != nil {
-		return result.Error
+		log.Fatal(result.Error)
 	}
 
 	if result.RowsAffected == 0 {
-		return errors.New("no rows affected")
+		log.Fatal("no rows affected")
+	}
+
+	UserOwner.IsOnBoarded = true
+
+	updateResult := db.Save(&UserOwner)
+	if updateResult.Error != nil {
+		log.Fatal(result.Error)
+	}
+
+	if updateResult.RowsAffected == 0 {
+		log.Fatal("no rows affected")
 	}
 
 	log.Info("successfully seeded branch")
-	return nil
 }

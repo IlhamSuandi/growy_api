@@ -17,24 +17,13 @@ func main() {
 		panic("failed to connect to database")
 	}
 
-	if err := seeds.SeedUsers(db); err != nil {
-		log.Fatal(err)
-	}
-	if err := seeds.SeedQrCodes(db); err != nil {
-		log.Fatal(err)
-	}
-	if err := seeds.SeedCompany(db); err != nil {
-		log.Fatal(err)
-	}
-	if err := seeds.SeedBranch(db); err != nil {
-		log.Fatal(err)
-	}
-	if err := seeds.SeedRole(db); err != nil {
-		log.Fatal(err)
-	}
-	if err := seeds.SeedCheckins(db); err != nil {
-		log.Fatal(err)
-	}
+	seeds.SeedUsers(db)
+	seeds.SeedQrCodes(db)
+	seeds.SeedCompany(db)
+	seeds.SeedBranch(db)
+	seeds.SeedEmployees(db)
+	// seeds.SeedRole(db)
+	seeds.SeedCheckins(db)
 
 	log.Info("===Seeder Finished===")
 }

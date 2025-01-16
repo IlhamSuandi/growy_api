@@ -20,7 +20,7 @@ func GetQrCode(db *gorm.DB, userId uint) (*model.QRCode, error) {
 	return qrRepo.GetQrByUserId(userId)
 }
 
-func SeedQrCodes(db *gorm.DB) error {
+func SeedQrCodes(db *gorm.DB) {
 	log := utils.Log
 	log.Info("seeding qr codes")
 	users := []*model.User{
@@ -38,17 +38,16 @@ func SeedQrCodes(db *gorm.DB) error {
 
 		if err != nil {
 			log.Errorf("error getting qr codes for user %s", user.Email)
-			return err
+			log.Fatal(err)
 		}
 
 		log.Infof("updating qr codes for user %s", user.Email)
 		_, err = UpdateQrCodes(db, qrData)
 		if err != nil {
 			log.Errorf("error updating qr codes for user %s", user.Email)
-			return err
+			log.Fatal(err)
 		}
 	}
 
 	log.Info("successfully seeded qr codes")
-	return nil
 }

@@ -8,16 +8,17 @@ import (
 	"gorm.io/gorm"
 )
 
-func CheckinUser(db *gorm.DB, userId uint, checkinToken string, location string) error {
+func CheckinUser(db *gorm.DB, userId uint, location string) error {
 	attendanceRepo := repository.NewAttendanceRepository(db)
+	companyRepo := repository.NewCompanyRepository(db)
 	qrCodeRepo := repository.NewQrCodeRepository(db)
-	attendanceUsecase := usecase.NewAttendanceUsecase(attendanceRepo, qrCodeRepo)
+	attendanceUsecase := usecase.NewAttendanceUsecase(attendanceRepo, qrCodeRepo, companyRepo)
 
-	_, err := attendanceUsecase.CheckInAttendance(checkinToken, userId, location)
+	_, err := attendanceUsecase.CheckInAttendance(userId, location)
 	return err
 }
 
-func SeedCheckins(db *gorm.DB) error {
+func SeedCheckins(db *gorm.DB) {
 	log := utils.Log
 	log.Info("seeding checkins")
 
@@ -28,17 +29,11 @@ func SeedCheckins(db *gorm.DB) error {
 
 	for _, user := range users {
 		log.Infof("checking in user %s", user.Email)
-		qrData, err := GetQrCode(db, user.Id)
-		if err != nil {
-			log.Errorf("error getting qr codes for user %s", user.Email)
-			return err
-		}
 
-		if err := CheckinUser(db, user.Id, qrData.Code, "jakarta"); err != nil {
+		if err := CheckinUser(db, user.Id, "jakarta"); err != nil {
 			log.Errorf("error checking in user %s", user.Email)
-			return err
+			log.Fatal(err)
 		}
 	}
 
-	return nil
 }
