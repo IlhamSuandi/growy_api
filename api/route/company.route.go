@@ -12,12 +12,12 @@ import (
 )
 
 func CompanyRoutes(router *http.ServeMux, db *gorm.DB) {
-  companyRepo := repository.NewCompanyRepository(db)
-  companyUsecase := usecase.NewCompanyUsecase(companyRepo)
-  controller := controller.NewCompanyController(companyUsecase)
+	companyRepo := repository.NewCompanyRepository(db)
+	companyUsecase := usecase.NewCompanyUsecase(companyRepo)
+	controller := controller.NewCompanyController(companyUsecase)
 
 	permissions := []string{
-		permission.Company,
+		permission.All,
 	}
 
 	// Create Company
