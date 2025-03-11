@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS companies (
   created_at timestamp NOT NULL DEFAULT now(),
   updated_at timestamp NOT NULL DEFAULT now(),
 
+  picture varchar(255) NOT NULL,
   name varchar(255) NOT NULL,
   address text NOT NULL,
   owner_email varchar(50) UNIQUE NOT NULL,
