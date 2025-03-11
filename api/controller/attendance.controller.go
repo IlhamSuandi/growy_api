@@ -32,7 +32,7 @@ func NewAttendanceController(attendanceUsecase usecase.AttendanceUsecase) *Atten
 // @Produce json
 // @Security BearerAuth
 // @Param request body dto.CheckInRequest true "request body"
-// @Failure 403 {object} types.ErrorResponse "token is empty"
+// @Failure 403 {object} types.ErrorResponse "token is empty or not valid"
 // @Failure 400 {object} types.ErrorResponse "request body is invalid"
 // @Failure 401 {object} types.ErrorResponse "Unauthorized"
 // @Success 200 {object} types.Response{data=dto.CheckInResponse} "Successfully Checked In Attendance"
@@ -58,10 +58,10 @@ func (ac *AttendanceController) CheckIn(w http.ResponseWriter, r *http.Request) 
 	attendance, err := ac.AttendanceUsecase.CheckInAttendance(userInfo.Id, payload.Location)
 	if err != nil {
 		ac.Logger.Errorf("[/attendance/check-in] error checking in attendance %s", err)
-		response.WriteError(w, http.StatusUnauthorized, types.ErrorResponse{
+		response.WriteError(w, http.StatusForbidden, types.ErrorResponse{
 			Message: "error checking in attendance",
 			Error:   err.Error(),
-			Status:  http.StatusUnauthorized,
+			Status:  http.StatusForbidden,
 		})
 		return
 	}
