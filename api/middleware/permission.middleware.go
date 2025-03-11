@@ -33,6 +33,10 @@ func Permission(requiredPermissions []string, db *gorm.DB, next http.Handler) ht
 			return
 		}
 
+		routePermission := r.URL.Path
+
+		utils.Log.Info(routePermission)
+
 		log := utils.Log
 		userInfo := r.Context().Value("userInfo").(*model.User)
 		userRepo := repository.NewUserRepository(db)
@@ -83,7 +87,6 @@ func Permission(requiredPermissions []string, db *gorm.DB, next http.Handler) ht
 			isAllowedAction := slices.Contains(permissionActions, "all") || slices.Contains(permissionActions, strings.ToLower(requestMethod))
 
 			if hasRequiredPermission && isAllowedAction {
-				// log.Info("[middleware] permission is valid")
 				next.ServeHTTP(w, r)
 				return
 			}
