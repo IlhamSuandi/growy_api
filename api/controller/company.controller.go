@@ -24,6 +24,19 @@ func NewCompanyController(companyUsecase usecase.CompanyUsecase) *CompanyControl
 	}
 }
 
+// @Tags Company
+// @Summary Create new company
+// @Description creating new company
+// @Param request body dto.CreateCompanyRequest true "Request body"
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Failure 400 {object} types.ErrorResponse "Bad Request"
+// @Failure 401 {object} types.ErrorResponse "Unauthorized"
+// @Failure 403 {object} types.ErrorResponse "No Permission"
+// @Failure 500 {object} types.ErrorResponse "Internal Server Error"
+// @Success 201 {object} types.Response{data=model.Company} "Successfully creating company"
+// @Router /company [post]
 func (cc *CompanyController) CreateCompany(w http.ResponseWriter, r *http.Request) {
 	var payload dto.CreateCompanyRequest
 	if err := utils.ParseJSON(r, &payload); err != nil {
@@ -55,14 +68,10 @@ func (cc *CompanyController) CreateCompany(w http.ResponseWriter, r *http.Reques
 		})
 	}
 
-	response.WriteJSON(w, http.StatusOK, types.Response{
+	response.WriteJSON(w, http.StatusCreated, types.Response{
 		Message: "Successfully created company",
-		Data: dto.CreateCompanyResponse{
-			Name:       company.Name,
-			Address:    company.Address,
-			OwnerEmail: company.OwnerEmail,
-		},
-		Status: http.StatusOK,
+		Data:    company,
+		Status:  http.StatusCreated,
 	})
 }
 
