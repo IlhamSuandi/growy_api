@@ -72,6 +72,17 @@ definitions:
     - branch_name
     - company_name
     type: object
+  dto.CreateCompanyRequest:
+    properties:
+      address:
+        example: jakarta
+        minLength: 5
+        type: string
+      name:
+        example: growy
+        minLength: 3
+        type: string
+    type: object
   dto.CreateQrRequest:
     properties:
       user_id:
@@ -155,6 +166,8 @@ definitions:
         type: string
       expires_in:
         type: integer
+      is_onboarded:
+        type: boolean
       token_type:
         type: string
     type: object
@@ -221,6 +234,8 @@ definitions:
       options:
         $ref: '#/definitions/model.CompanyOption'
       owner_email:
+        type: string
+      picture:
         type: string
       updated_at:
         type: string
@@ -404,12 +419,16 @@ definitions:
         $ref: '#/definitions/model.Employee'
       is_email_verified:
         type: boolean
+      is_on_boarded:
+        type: boolean
       log:
         $ref: '#/definitions/model.Log'
       permissions:
         items:
           $ref: '#/definitions/model.Permission'
         type: array
+      picture:
+        type: string
       qrcode:
         $ref: '#/definitions/model.QRCode'
       role:
@@ -548,7 +567,7 @@ paths:
           schema:
             $ref: '#/definitions/types.ErrorResponse'
         "403":
-          description: token is empty
+          description: token is empty or not valid
           schema:
             $ref: '#/definitions/types.ErrorResponse'
       security:
@@ -862,6 +881,50 @@ paths:
       security:
       - BearerAuth: []
       summary: get owner companies
+      tags:
+      - Company
+    post:
+      consumes:
+      - application/json
+      description: creating new company
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateCompanyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Successfully creating company
+          schema:
+            allOf:
+            - $ref: '#/definitions/types.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Company'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "403":
+          description: No Permission
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create new company
       tags:
       - Company
   /employee:

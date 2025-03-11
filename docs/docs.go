@@ -147,7 +147,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "token is empty",
+                        "description": "token is empty or not valid",
                         "schema": {
                             "$ref": "#/definitions/types.ErrorResponse"
                         }
@@ -658,6 +658,79 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "creating new company",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Company"
+                ],
+                "summary": "Create new company",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateCompanyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully creating company",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/types.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Company"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "No Permission",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/types.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/employee": {
@@ -1142,6 +1215,21 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateCompanyRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "minLength": 5,
+                    "example": "jakarta"
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "example": "growy"
+                }
+            }
+        },
         "dto.CreateQrRequest": {
             "type": "object",
             "required": [
@@ -1264,6 +1352,9 @@ const docTemplate = `{
                 "expires_in": {
                     "type": "integer"
                 },
+                "is_onboarded": {
+                    "type": "boolean"
+                },
                 "token_type": {
                     "type": "string"
                 }
@@ -1364,6 +1455,9 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.CompanyOption"
                 },
                 "owner_email": {
+                    "type": "string"
+                },
+                "picture": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -1643,6 +1737,9 @@ const docTemplate = `{
                 "is_email_verified": {
                     "type": "boolean"
                 },
+                "is_on_boarded": {
+                    "type": "boolean"
+                },
                 "log": {
                     "$ref": "#/definitions/model.Log"
                 },
@@ -1651,6 +1748,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.Permission"
                     }
+                },
+                "picture": {
+                    "type": "string"
                 },
                 "qrcode": {
                     "$ref": "#/definitions/model.QRCode"
