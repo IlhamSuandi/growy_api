@@ -5,9 +5,9 @@ const (
 	Admin    = "admin"
 	Owner    = "owner"
 	Employee = "employee"
+	All      = "all"
 
 	// route specific
-	All           = "all"
 	Me            = "me"
 	Qrcode        = "qrcode"
 	Attendances   = "attendances"
