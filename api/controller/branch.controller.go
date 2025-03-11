@@ -109,7 +109,7 @@ func (bc *BranchController) CreateBranch(w http.ResponseWriter, r *http.Request)
 			Error:   err.Error(),
 			Status:  http.StatusBadRequest,
 		})
-    return
+		return
 	}
 
 	bc.Logger.Info("[/branch] getting user info from auth middleware")
@@ -143,7 +143,7 @@ func (bc *BranchController) CreateBranch(w http.ResponseWriter, r *http.Request)
 	}
 
 	bc.Logger.Info("[/branch] successfully creating branch")
-  response.WriteJSON(w, http.StatusCreated, types.Response{
+	response.WriteJSON(w, http.StatusCreated, types.Response{
 		Message: "Successfully created branch",
 		Data:    branch,
 		Status:  http.StatusCreated,
