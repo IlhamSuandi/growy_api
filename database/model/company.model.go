@@ -3,10 +3,11 @@ package model
 type Company struct {
 	Model
 
+	Picture    string        `gorm:"type:varchar(255)" json:"picture"`
 	Name       string        `gorm:"types:varchar(255);not null" json:"name"`
 	Address    string        `gorm:"types:text;not null" json:"address"`
 	OwnerEmail string        `gorm:"index;" json:"owner_email"`
-  Options    CompanyOption `gorm:"foreignKey:CompanyId;references:Id;constraint:OnDelete:CASCADE" json:"options"`
+	Options    CompanyOption `gorm:"foreignKey:CompanyId;references:Id;constraint:OnDelete:CASCADE" json:"options"`
 
 	Branches     []Branch      `gorm:"foreignKey:CompanyId;references:Id;constraint:OnDelete:CASCADE" json:"branches"`
 	WorkSchedule *WorkSchedule `gorm:"foreignKey:CompanyId;references:Id;constraint:OnDelete:CASCADE" json:"work_schedule"`
