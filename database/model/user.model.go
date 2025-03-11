@@ -9,6 +9,7 @@ type User struct {
 	AuthProvider    string `gorm:"type:varchar(50)" json:"auth_provider"`
 	IsOnBoarded     bool   `gorm:"type:boolean;default:false" json:"is_on_boarded"`
 	Role            string `gorm:"type:varchar(10);not null" json:"role"` // admin, owner, employee
+	Picture         string `gorm:"type:varchar(255)" json:"picture"`
 
 	Log         *Log          `gorm:"foreignKey:Email;references:Email;constraint:OnDelete:CASCADE"`
 	Company     []Company     `gorm:"foreignKey:OwnerEmail;references:Email;constraint:OnDelete:CASCADE" json:"company"`
