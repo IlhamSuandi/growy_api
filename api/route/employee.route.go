@@ -28,7 +28,7 @@ func EmployeeRoutes(router *http.ServeMux, db *gorm.DB) {
 	)
 
 	permissions := []string{
-		permission.EmployeeRoute,
+		permission.All,
 	}
 
 	// Add Employee
